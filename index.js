@@ -88,18 +88,12 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 const app = express();
-app.listen(port)
-
-// Middleware
+const port = process.env.PORT || 3000
 app.use(cors());
 app.use(express.json());
 
-
-// MongoDB URI
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rbujavm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
-
-// Mongo Client
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -108,22 +102,19 @@ const client = new MongoClient(uri, {
   }
 });
 
-
 let universityDataCollection;
 
-
-// Connect MongoDB
 async function connectDB() {
 
   try {
 
     await client.connect();
 
+    console.log("MongoDB Connected");
+
     const database = client.db('eduAssistsDB');
 
     universityDataCollection = database.collection('studyData');
-
-    console.log('MongoDB Connected');
 
   } catch (error) {
 
@@ -136,7 +127,7 @@ async function connectDB() {
 connectDB();
 
 
-// ROOT ROUTE
+// Root Route
 app.get('/', (req, res) => {
 
   res.send('EduAssists Server Running');
@@ -144,32 +135,12 @@ app.get('/', (req, res) => {
 });
 
 
-// GET ALL STUDY DATA
+// GET DATA
 app.get('/studyData', async (req, res) => {
 
   try {
 
     const result = await universityDataCollection.find().toArray();
-
-    res.send(result);
-
-  } catch (error) {
-
-    res.status(500).send(error);
-
-  }
-
-});
-
-
-// POST STUDY DATA
-app.post('/studyData', async (req, res) => {
-
-  try {
-
-    const studyData = req.body;
-
-    const result = await universityDataCollection.insertOne(studyData);
 
     res.send(result);
 
