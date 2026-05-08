@@ -70,9 +70,7 @@
 
 
 
-
-//new version
-
+//version 2
 
 const express = require('express');
 require('dotenv').config();
@@ -80,62 +78,79 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-dpd64pq-shard-00-00.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-01.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-02.rbujavm.mongodb.net:27017/?ssl=true&replicaSet=atlas-x7k3ap-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
+// MongoDB connection (only when needed, not at startup)
+let client = null;
+let dbConnected = false;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
+async function connectToMongo() {
+  if (dbConnected && client) {
+    return client;
+  }
+  
+  const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rbujavm.mongodb.net/?retryWrites=true&w=majority`;
+  
+  client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  
+  await client.connect();
+  dbConnected = true;
+  return client;
+}
+
+// Routes
+app.get('/', (req, res) => {
+  res.send('EduAssists Server is running!');
+});
+
+// Get all study data
+app.get('/studyData', async (req, res) => {
+  try {
+    const mongoClient = await connectToMongo();
+    const database = mongoClient.db('eduAssistsDB');
+    const universityDataCollection = database.collection('studyData');
+    const result = await universityDataCollection.find().toArray();
+    res.send(result);
+  } catch (error) {
+    console.error('Error fetching study data:', error);
+    res.status(500).send({ error: 'Failed to fetch data' });
   }
 });
 
-async function run() {
+// Post study data
+app.post('/studyData', async (req, res) => {
   try {
-    // Keep the connection logic here
-    await client.connect();
-    console.log("Connected to MongoDB!");
-
-    const database = client.db('eduAssistsDB');
+    const mongoClient = await connectToMongo();
+    const database = mongoClient.db('eduAssistsDB');
     const universityDataCollection = database.collection('studyData');
-
-    // MOVED ROUTES INSIDE TO ACCESS COLLECTION, BUT BETTER STRUCTURE BELOW:
-    app.get('/studyData', async (req, res) => {
-      const result = await universityDataCollection.find().toArray();
-      res.send(result);
-    });
-
-    app.post('/studyData', async (req, res) => {
-      const studyData = req.body;
-      const result = await universityDataCollection.insertOne(studyData);
-      res.send(result);
-    });
-
-    // Root route
-    app.get('/', (req, res) => {
-      res.send('EduAssists Server is running!');
-    });
-
-  } catch (err) {
-    console.error(err);
+    const studyData = req.body;
+    console.log(studyData);
+    const result = await universityDataCollection.insertOne(studyData);
+    res.send(result);
+  } catch (error) {
+    console.error('Error posting study data:', error);
+    res.status(500).send({ error: 'Failed to post data' });
   }
-}
+});
 
-// Start the DB connection
-run().catch(console.dir);
-
-// This is required for Vercel to recognize the app
+// For Vercel serverless function
 module.exports = app;
 
-// Listen only if running locally
+// Only listen if running locally
 if (process.env.NODE_ENV !== 'production') {
+  const port = process.env.PORT || 3000;
   app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`Server running on port ${port}`);
   });
 }
+
+
