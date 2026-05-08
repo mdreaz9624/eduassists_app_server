@@ -1,81 +1,172 @@
-const express = require('express')
-require('dotenv').config()
-const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+// const express = require('express')
+// require('dotenv').config()
+// const cors = require('cors');
+// const { MongoClient, ServerApiVersion } = require('mongodb');
 
 
 
-const app = express()
-const port = process.env.PORT || 3000
+// const app = express()
+// const port = process.env.PORT || 3000
 
 
 
-// Middleware
+// // Middleware
+// app.use(cors());
+// app.use(express.json());
+// const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-dpd64pq-shard-00-00.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-01.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-02.rbujavm.mongodb.net:27017/?ssl=true&replicaSet=atlas-x7k3ap-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
+
+// // console.log(process.env.DB_USER);
+// // console.log(process.env.DB_PASSWORD);
+
+// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// const client = new MongoClient(uri, {
+//   serverApi: {
+//     version: ServerApiVersion.v1,
+//     strict: true,
+//     deprecationErrors: true,
+//   }
+// });
+
+// async function run() {
+//   try {
+//     // Connect the client to the server	(optional starting in v4.7)
+//     await client.connect();
+
+//     const database = client.db('eduAssistsDB');
+//     const universityDataCollection = database.collection('studyData');
+
+//     // university info api
+//     app.get('/studyData', async (req, res) => {
+//       const result = await universityDataCollection.find().toArray();
+//       res.send(result);
+//     });
+
+
+//     app.post('/studyData', async (req, res) => {
+//       studyData = req.body;
+//       console.log(studyData);
+//       const result = await universityDataCollection.insertOne(studyData);
+//       res.send(result);
+//     });
+
+
+
+
+
+
+
+
+
+
+//     // Send a ping to confirm a successful connection
+//     await client.db("admin").command({ ping: 1 });
+//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//   } finally {
+//     // Ensures that the client will close when you finish/error
+//     // await client.close();
+//   }
+// }
+// run().catch(console.dir);
+
+
+
+// app.get('/', (req, res) => {
+//   res.send('EduAssists Server is running!')
+// })
+
+// app.listen(port, () => {
+//   console.log(`Example app listening on port ${port}`)
+// })
+
+
+//new version
+
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+
+const { MongoClient, ServerApiVersion } = require("mongodb");
+
+const app = express();
+
 app.use(cors());
 app.use(express.json());
-const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-dpd64pq-shard-00-00.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-01.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-02.rbujavm.mongodb.net:27017/?ssl=true&replicaSet=atlas-x7k3ap-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
 
-// console.log(process.env.DB_USER);
-// console.log(process.env.DB_PASSWORD);
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// TEST ROUTE
+app.get("/", (req, res) => {
+  res.send("EduAssists Server Running Successfully");
+});
+
+
+// Mongo URI
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rbujavm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+
+// Mongo Client
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
-async function run() {
+
+let studyDataCollection;
+
+
+// Connect MongoDB
+async function connectDB() {
+
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+
     await client.connect();
 
-    const database = client.db('eduAssistsDB');
-    const universityDataCollection = database.collection('studyData');
+    console.log("MongoDB Connected");
 
-    // university info api
-    app.get('/studyData', async (req, res) => {
-      const result = await universityDataCollection.find().toArray();
-      res.send(result);
-    });
+    const db = client.db("eduAssistsDB");
 
+    studyDataCollection = db.collection("studyData");
 
-    app.post('/studyData', async (req, res) => {
-      studyData = req.body;
-      console.log(studyData);
-      const result = await universityDataCollection.insertOne(studyData);
-      res.send(result);
-    });
+  } catch (error) {
 
+    console.error("MongoDB Error:", error);
 
-
-
-
-
-
-
-
-
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
+
 }
-run().catch(console.dir);
+
+connectDB();
 
 
+// STUDY DATA ROUTE
+app.get("/studyData", async (req, res) => {
 
-app.get('/', (req, res) => {
-  res.send('EduAssists Server is running!')
-})
+  try {
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+    if (!studyDataCollection) {
 
+      return res.status(500).send({
+        error: "Database not connected",
+      });
+
+    }
+
+    const result = await studyDataCollection.find().toArray();
+
+    res.send(result);
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).send(error);
+
+  }
+
+});
+
+
+module.exports = app;
 
