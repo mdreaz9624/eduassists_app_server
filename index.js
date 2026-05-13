@@ -251,10 +251,15 @@ app.use(express.json());
 
 
 // =========================
-// MongoDB
+// MongoDB URI
 // =========================
 
-const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-dpd64pq-shard-00-00.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-01.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-02.rbujavm.mongodb.net:27017/?ssl=true&replicaSet=atlas-x7k3ap-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rbujavm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+
+// =========================
+// MongoDB Client
+// =========================
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -264,12 +269,9 @@ const client = new MongoClient(uri, {
     },
 });
 
-let studyDataCollection;
-let usersCollection;
-
 
 // =========================
-// MongoDB Connect
+// Connect DB Function
 // =========================
 
 async function connectDB() {
@@ -278,13 +280,7 @@ async function connectDB() {
 
         await client.connect();
 
-        const database = client.db("eduAssistsDB");
-
-        studyDataCollection = database.collection("studyData");
-
-        usersCollection = database.collection("users");
-
-        console.log("MongoDB Connected");
+        return client.db("eduAssistsDB");
 
     } catch (error) {
 
@@ -294,11 +290,9 @@ async function connectDB() {
 
 }
 
-connectDB();
-
 
 // =========================
-// ROUTES
+// ROOT
 // =========================
 
 app.get("/", (req, res) => {
@@ -309,12 +303,16 @@ app.get("/", (req, res) => {
 
 
 // =========================
-// STUDY DATA API
+// GET STUDY DATA
 // =========================
 
 app.get("/studyData", async (req, res) => {
 
     try {
+
+        const db = await connectDB();
+
+        const studyDataCollection = db.collection("studyData");
 
         const result = await studyDataCollection.find().toArray();
 
@@ -334,13 +332,21 @@ app.get("/studyData", async (req, res) => {
 });
 
 
+// =========================
+// POST STUDY DATA
+// =========================
+
 app.post("/studyData", async (req, res) => {
 
     try {
 
-        const studyData = req.body;
+        const db = await connectDB();
 
-        const result = await studyDataCollection.insertOne(studyData);
+        const studyDataCollection = db.collection("studyData");
+
+        const data = req.body;
+
+        const result = await studyDataCollection.insertOne(data);
 
         res.send(result);
 
@@ -359,12 +365,16 @@ app.post("/studyData", async (req, res) => {
 
 
 // =========================
-// USERS API
+// GET USERS
 // =========================
 
 app.get("/users", async (req, res) => {
 
     try {
+
+        const db = await connectDB();
+
+        const usersCollection = db.collection("users");
 
         const result = await usersCollection.find().toArray();
 
@@ -384,9 +394,17 @@ app.get("/users", async (req, res) => {
 });
 
 
+// =========================
+// POST USERS
+// =========================
+
 app.post("/users", async (req, res) => {
 
     try {
+
+        const db = await connectDB();
+
+        const usersCollection = db.collection("users");
 
         const userData = req.body;
 
@@ -425,7 +443,7 @@ app.post("/users", async (req, res) => {
 
 
 // =========================
-// EXPORT FOR VERCEL
+// EXPORT
 // =========================
 
 module.exports = app;
