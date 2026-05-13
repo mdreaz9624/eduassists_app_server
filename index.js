@@ -1,88 +1,90 @@
-const express = require('express')
-require('dotenv').config()
-const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+//main version 
+
+// const express = require('express')
+// require('dotenv').config()
+// const cors = require('cors');
+// const { MongoClient, ServerApiVersion } = require('mongodb');
 
 
 
-const app = express()
-const port = process.env.PORT || 3000
+// const app = express()
+// const port = process.env.PORT || 3000
 
 
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-dpd64pq-shard-00-00.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-01.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-02.rbujavm.mongodb.net:27017/?ssl=true&replicaSet=atlas-x7k3ap-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
+// // Middleware
+// app.use(cors());
+// app.use(express.json());
+// const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-dpd64pq-shard-00-00.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-01.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-02.rbujavm.mongodb.net:27017/?ssl=true&replicaSet=atlas-x7k3ap-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
 
-// console.log(process.env.DB_USER);
-// console.log(process.env.DB_PASSWORD);
+// // console.log(process.env.DB_USER);
+// // console.log(process.env.DB_PASSWORD);
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
+// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// const client = new MongoClient(uri, {
+//   serverApi: {
+//     version: ServerApiVersion.v1,
+//     strict: true,
+//     deprecationErrors: true,
+//   }
+// });
 
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+// async function run() {
+//   try {
+//     // Connect the client to the server	(optional starting in v4.7)
+//     await client.connect();
 
-    const database = client.db('eduAssistsDB');
-    const universityDataCollection = database.collection('studyData');
-    const usersCollection = database.collection('users');
+//     const database = client.db('eduAssistsDB');
+//     const universityDataCollection = database.collection('studyData');
+//     const usersCollection = database.collection('users');
   
 
-    // university info api
-    app.get('/studyData', async (req, res) => {
-      const result = await universityDataCollection.find().toArray();
-      res.send(result);
-    });
+//     // university info api
+//     app.get('/studyData', async (req, res) => {
+//       const result = await universityDataCollection.find().toArray();
+//       res.send(result);
+//     });
 
 
-    app.post('/studyData', async (req, res) => {
-      studyData = req.body;
-      console.log(studyData);
-      const result = await universityDataCollection.insertOne(studyData);
-      res.send(result);
-    });
+//     app.post('/studyData', async (req, res) => {
+//       studyData = req.body;
+//       console.log(studyData);
+//       const result = await universityDataCollection.insertOne(studyData);
+//       res.send(result);
+//     });
 
-    // users api
-    app.get('/users', async (req, res) => {
-      const result = await usersCollection.find().toArray();
-      res.send(result);
-    });
+//     // users api
+//     app.get('/users', async (req, res) => {
+//       const result = await usersCollection.find().toArray();
+//       res.send(result);
+//     });
 
-    app.post('/users', async (req, res) => {
-      const userData = req.body;
-      console.log(userData);
-      const result = await usersCollection.insertOne(userData);
-      res.send(result);
-    });
+//     app.post('/users', async (req, res) => {
+//       const userData = req.body;
+//       console.log(userData);
+//       const result = await usersCollection.insertOne(userData);
+//       res.send(result);
+//     });
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
-}
-run().catch(console.dir);
+//     // Send a ping to confirm a successful connection
+//     await client.db("admin").command({ ping: 1 });
+//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//   } finally {
+//     // Ensures that the client will close when you finish/error
+//     // await client.close();
+//   }
+// }
+// run().catch(console.dir);
 
 
 
-app.get('/', (req, res) => {
-  res.send('EduAssists Server is running!')
-})
+// app.get('/', (req, res) => {
+//   res.send('EduAssists Server is running!')
+// })
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+// app.listen(port, () => {
+//   console.log(`Example app listening on port ${port}`)
+// })
 
 
 
@@ -234,3 +236,196 @@ app.listen(port, () => {
 // }
 
 
+//another version with better error handling and connection management
+
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+
+const { MongoClient, ServerApiVersion } = require("mongodb");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+
+// =========================
+// MongoDB
+// =========================
+
+const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-dpd64pq-shard-00-00.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-01.rbujavm.mongodb.net:27017,ac-dpd64pq-shard-00-02.rbujavm.mongodb.net:27017/?ssl=true&replicaSet=atlas-x7k3ap-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
+
+const client = new MongoClient(uri, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    },
+});
+
+let studyDataCollection;
+let usersCollection;
+
+
+// =========================
+// MongoDB Connect
+// =========================
+
+async function connectDB() {
+
+    try {
+
+        await client.connect();
+
+        const database = client.db("eduAssistsDB");
+
+        studyDataCollection = database.collection("studyData");
+
+        usersCollection = database.collection("users");
+
+        console.log("MongoDB Connected");
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+}
+
+connectDB();
+
+
+// =========================
+// ROUTES
+// =========================
+
+app.get("/", (req, res) => {
+
+    res.send("EduAssists Server Running");
+
+});
+
+
+// =========================
+// STUDY DATA API
+// =========================
+
+app.get("/studyData", async (req, res) => {
+
+    try {
+
+        const result = await studyDataCollection.find().toArray();
+
+        res.send(result);
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).send({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+});
+
+
+app.post("/studyData", async (req, res) => {
+
+    try {
+
+        const studyData = req.body;
+
+        const result = await studyDataCollection.insertOne(studyData);
+
+        res.send(result);
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).send({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+});
+
+
+// =========================
+// USERS API
+// =========================
+
+app.get("/users", async (req, res) => {
+
+    try {
+
+        const result = await usersCollection.find().toArray();
+
+        res.send(result);
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).send({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+});
+
+
+app.post("/users", async (req, res) => {
+
+    try {
+
+        const userData = req.body;
+
+        const existingUser = await usersCollection.findOne({
+            email: userData.email
+        });
+
+        if (existingUser) {
+
+            return res.send({
+                success: false,
+                message: "User already exists"
+            });
+
+        }
+
+        const result = await usersCollection.insertOne(userData);
+
+        res.send({
+            success: true,
+            insertedId: result.insertedId
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).send({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+});
+
+
+// =========================
+// EXPORT FOR VERCEL
+// =========================
+
+module.exports = app;
