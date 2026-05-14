@@ -416,6 +416,7 @@ app.post("/users", async (req, res) => {
 
             return res.send({
                 success: false,
+                inserted: false,
                 message: "User already exists"
             });
 
@@ -425,6 +426,7 @@ app.post("/users", async (req, res) => {
 
         res.send({
             success: true,
+            inserted: true,
             insertedId: result.insertedId
         });
 
