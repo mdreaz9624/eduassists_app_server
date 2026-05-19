@@ -393,6 +393,48 @@ app.get("/users", async (req, res) => {
 
 });
 
+// =========================
+//get user by email
+// =========================
+// Get user role by email
+
+app.get('/users/role/:email', async (req, res) => {
+    const email = req.params.email;
+    const query = { email: email };
+    const user = await usersCollection.findOne(query);
+    res.send({ role: user?.role || 'student' }); 
+});
+
+
+//===================
+//PATCH Route: Promote user to admin
+//===================
+
+app.patch('/users/admin/:id', async (req, res) => {
+    try{
+        const id=req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+            $set: {
+                role: 'admin'
+            }
+        };
+
+        const db = await connectDB();
+        const usersCollection = db.collection("users");
+        const result = await usersCollection.updateOne(filter, updateDoc);
+
+        res.send(result);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
 
 // =========================
 // POST USERS
