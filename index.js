@@ -365,6 +365,42 @@ app.post("/studyData", async (req, res) => {
 
 
 // =========================
+//get user by email
+// =========================
+// Get user role by email
+
+
+
+
+app.get('/users/role/:email', async (req, res) => {
+    try {
+        const email = req.params.email;
+
+        const db = await connectDB();
+
+        const usersCollection = db.collection("users");
+
+        const user = await usersCollection.findOne({
+            email: email
+        });
+
+        res.send({
+            role: user?.role || "student"
+        });
+
+    } catch (error) {
+
+        res.status(500).send({
+            message: "Internal server error",
+            error: error.message
+        });
+
+    }
+});
+
+
+
+// =========================
 // GET USERS
 // =========================
 
@@ -393,17 +429,6 @@ app.get("/users", async (req, res) => {
 
 });
 
-// =========================
-//get user by email
-// =========================
-// Get user role by email
-
-app.get('/users/role/:email', async (req, res) => {
-    const email = req.params.email;
-    const query = { email: email };
-    const user = await usersCollection.findOne(query);
-    res.send({ role: user?.role || 'student' }); 
-});
 
 
 //===================
@@ -491,3 +516,12 @@ app.post("/users", async (req, res) => {
 // =========================
 
 module.exports = app;
+
+
+// Only listen if running locally
+// if (process.env.NODE_ENV !== 'production') {
+//   const port = process.env.PORT || 3000;
+//   app.listen(port, () => {
+//     console.log(`Server running on port ${port}`);
+//   });
+// }
