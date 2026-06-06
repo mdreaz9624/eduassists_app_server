@@ -1,3 +1,4 @@
+
 // controllers/studyController.js
 const { connectDatabase } = require("../config/database");
 

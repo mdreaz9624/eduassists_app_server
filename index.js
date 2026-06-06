@@ -1,7 +1,4 @@
 
-//create backend with better structure and error handling
-
-
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -12,7 +9,7 @@ const studyRoutes = require("./routes/studyRoutes");
 const userRoutes = require("./routes/userRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
