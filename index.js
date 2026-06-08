@@ -7,6 +7,8 @@ const { connectDatabase } = require("./config/database");
 // Route Imports
 const studyRoutes = require("./routes/studyRoutes");
 const userRoutes = require("./routes/userRoutes");
+const galleryRoutes = require("./routes/galleryRoutes");
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +25,7 @@ app.get("/", (req, res) => {
 // App Feature Endpoint Enforcers
 app.use("/studyData", studyRoutes);
 app.use("/users", userRoutes);
+app.use("/gallery", galleryRoutes);
 
 // Connect to Database first, then spin up Express web engine
 connectDatabase()
