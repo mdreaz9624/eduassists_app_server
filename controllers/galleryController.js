@@ -1,35 +1,3 @@
-//controllers/galleryController.js
-
-// const { connectDatabase } = require("../config/database");
-
-// const getGalleryData = async (req, res) => {
-//     try {
-//         const db = await connectDatabase();
-//         const result = await db.collection("gallery").find().toArray();
-//         res.send(result);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send({ success: false, message: error.message });
-//     }
-// };
-
-// const postGalleryData = async (req, res) => {
-//     try {
-//         const db = await connectDatabase();
-//         const data = req.body;
-//         const result = await db.collection("gallery").insertOne(data);
-//         res.send(result);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send({ success: false, message: error.message });
-//     }
-// };
-
-// module.exports = { getGalleryData, postGalleryData };
-
-
-// new version 
-
 
 // controllers/galleryController.js
 

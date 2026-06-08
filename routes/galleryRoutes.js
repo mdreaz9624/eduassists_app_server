@@ -1,14 +1,4 @@
-// routes/galleryRoutes.js
-// const express = require("express");
-// const router = express.Router();
-// const { getGalleryData, postGalleryData } = require("../controllers/galleryController");
 
-// router.get("/", getGalleryData);
-// router.post("/", postGalleryData);
-
-// module.exports = router;
-
-// new version
 
 // routes/galleryRoutes.js
 
