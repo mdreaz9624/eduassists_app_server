@@ -8,6 +8,7 @@ const { connectDatabase } = require("./config/database");
 const studyRoutes = require("./routes/studyRoutes");
 const userRoutes = require("./routes/userRoutes");
 const galleryRoutes = require("./routes/galleryRoutes");
+const geminiRoutes = require("./routes/geminiRoutes");
 
 
 const app = express();
@@ -26,6 +27,8 @@ app.get("/", (req, res) => {
 app.use("/studyData", studyRoutes);
 app.use("/users", userRoutes);
 app.use("/gallery", galleryRoutes);
+app.use("/api/gemini", geminiRoutes);
+
 
 // Connect to Database first, then spin up Express web engine
 connectDatabase()
